@@ -1,0 +1,111 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: logstash-devops
+  namespace: logging
+  labels:
+    app: logstash-devops
+    version: 7.4.2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: logstash-devops
+      version: 7.4.2
+  template:
+    metadata:
+      labels:
+        app: logstash-devops
+        version: 7.4.2
+      annotations:
+        ## Custom pod annotations
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "9198"
+        prometheus.io/scrape: "true"
+    spec:
+      containers:
+        - name: logstash
+          image: devops/logstash:7.4.2
+          imagePullPolicy: Always
+          env:
+            - name: BOOTSTRAP_SERVERS
+              value: "elk-kafka-0.elk-kafka-headless.logging.svc.cluster.local:9092,elk-kafka-1.elk-kafka-headless.logging.svc.cluster.local:9092,elk-kafka-2.elk-kafka-headless.logging.svc.cluster.local:9092"
+            - name: CONSUMER_GROUP
+              value: "${TEAM}"
+            - name: CONSUMER_THREAD_COUNT
+              value: "10"
+            - name: ELASTIC_SEARCH_HOST
+              value: "elk-es.logging.svc.cluster.local:9200"
+            - name: INDEX_START_NAME
+              value: "k8s2"
+            - name: LS_JAVA_OPTS
+              value: "-Xms2g -Xmx2g"
+            - name: PIPELINE_BATCHSIZE
+              value: "1000"
+            - name: PIPELINE_WORKER
+              value: "8"
+            - name: TOPIC_PATTERN
+              value: "${TEAM}-.*"
+            - name: TEAM
+              value: "devops"
+            - name: MAX_POLL_RECORDS
+              value: "500"
+            - name: MAX_POLL_INTERVAL
+              value: "600000"
+            - name: METADATA_MAX_AGE
+              value: "60000"
+            - name: AUTO_COMMIT_INTERVAL
+              value: "1000"
+            - name: SESSION_TIMEOUT
+              value: "120000"
+            - name: REQUEST_TIMEOUT
+              value: "180000"
+            - name: HEARTBEAT_INTERVAL
+              value: "30000"
+          resources:
+            limits:
+              cpu: 2000m
+              memory: 3000Mi
+            requests:
+              cpu: 1000m
+              memory: 1024Mi
+        - name: logstash-exporter
+          command: ["/bin/sh", "-c"]
+          args:
+            - |-
+              sleep 60
+              exec /logstash_exporter
+              --logstash.endpoint=http://localhost:9600
+              --web.listen-address=:9198
+          image: bonniernews/logstash_exporter:v0.1.2
+          imagePullPolicy: IfNotPresent
+          livenessProbe:
+            failureThreshold: 8
+            httpGet:
+              path: /metrics
+              port: ls-exporter
+              scheme: HTTP
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 60
+          ports:
+          - containerPort: 9198
+            name: ls-exporter
+            protocol: TCP
+          readinessProbe:
+            failureThreshold: 8
+            httpGet:
+              path: /metrics
+              port: ls-exporter
+              scheme: HTTP
+            periodSeconds: 15
+            successThreshold: 1
+            timeoutSeconds: 60
+          resources:
+            limits:
+              cpu: 101m
+              memory: 100Mi
+            requests:
+              cpu: 50m
+              memory: 100Mi

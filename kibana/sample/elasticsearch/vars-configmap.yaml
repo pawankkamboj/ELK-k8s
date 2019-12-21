@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: elk-kibana-es-vars
+  namespace: logging
+  labels:
+    app: elk-kibana-es
+data:
+  CLUSTER_NAME: "elk-k8s2"
+  DISCOVERY_SERVICE: "elk-es-master-0.es-master-headless.logging.svc.cluster.local,elk-es-master-1.es-master-headless.logging.svc.cluster.local,elk-es-master-2.es-master-headless.logging.svc.cluster.local"
+  MASTER_DISCOVERY_SERVICE: "elk-es-master-0.es-master-headless.logging.svc.cluster.local,elk-es-master-1.es-master-headless.logging.svc.cluster.local"
+  GATEWAY_EXPECTED_NODES: "2"
+  GATEWAY_NODES_RECOVERY: "2"
+  MAX_SHARDS_PER_NODES: "5000"
+  NETWORK_HOST: "${NODENAME}.elk-kibana-es-headless.logging.svc.cluster.local"
+  NODE_DATA: "false"
+  NODE_INGEST: "false"
+  NODE_MASTER: "false"
+  NODE_NAME: "${NODENAME}.elk-kibana-es-headless.logging.svc.cluster.local"
+  PIPELINE_MAX_EVENTS: "10000"
+  THREAD_POOL_WRITE_QUEUE_SIZE: "5000"
+  HTTP_PORT: "9200-9300"
+  TCP_PORT: "9300-9400"

@@ -1,0 +1,21 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: es-data-headless
+  namespace: logging
+  labels:
+    app: elk-es
+    role: data
+spec:
+  ports:
+  - name: transport
+    port: 9300
+    protocol: TCP
+  - name: http
+    port: 9200
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: elk-es
+    role: data

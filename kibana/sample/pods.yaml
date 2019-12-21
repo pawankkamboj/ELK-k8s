@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elk-kibana
+  namespace: logging
+  labels:
+    app: elk-kibana
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: elk-kibana
+  template:
+    metadata:
+      labels:
+        app: elk-kibana
+        version: 7.4.2
+    spec:
+      containers:
+      - name: kibana
+        image: devops/kibana:7.4.2
+        imagePullPolicy: Always
+        #command: ['sh', '-c', '/bin/sleep 90000']
+        args:
+        - --elasticsearch.hosts=http://elk-kibana-es-0.elk-kibana-es-headless.logging.svc.cluster.local:9200
+        - --host=0.0.0.0
+        resources:
+          limits:
+            cpu: 2000m
+            memory: 2048Mi
+          requests:
+            cpu: 1000m
+            memory: 1000Mi
+        ports:
+        - containerPort: 5601
+          name: http
+          protocol: TCP
+        livenessProbe:
+          httpGet:
+            path: /api/status
+            port: http
+          initialDelaySeconds: 60
+          timeoutSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /api/status
+            port: http
+          initialDelaySeconds: 60
+          timeoutSeconds: 10

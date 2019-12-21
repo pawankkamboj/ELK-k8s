@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: filebeat
+  namespace: logging
+  labels:
+    app: filebeat
+    team: devops
+data:
+  filebeat.yml: |
+    filebeat.inputs:
+    - enabled: true
+      paths:
+      - /var/log/*.log
+      - /var/log/messages
+      - /var/log/syslog
+      type: log
+    - paths:
+      - /var/lib/docker/containers/*/*.log
+      type: container
+      processors:
+      - add_kubernetes_metadata:
+          in_cluster: true
+          host: ${NODE_NAME}
+    processors:
+    - drop_event:
+        when:
+          or:
+          - contains:
+              kubernetes.namespace: monitoring
+          - contains:
+              kubernetes.namespace: logging
+    http.enabled: true
+    http.port: 5066
+    logging.level: warning
+    output.kafka:
+      hosts:
+      - elk-kafka-0.elk-kafka-headless.logging.svc.cluster.local:9092
+      - elk-kafka-1.elk-kafka-headless.logging.svc.cluster.local:9092
+      - elk-kafka-2.elk-kafka-headless.logging.svc.cluster.local:9092
+      topic: fallback-nocontainer
+      topics:
+      - topic: %{[kubernetes.namespace]}-%{[kubernetes.labels.app]}
+        when.has_fields:
+        - kubernetes.labels.app
+      - topic: %{[kubernetes.namespace]}-fallback
+        when.has_fields:
+        - kubernetes.namespace

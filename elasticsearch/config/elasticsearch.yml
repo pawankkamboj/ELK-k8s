@@ -1,0 +1,20 @@
+cluster.name: ${CLUSTER_NAME}
+cluster.remote.connect: ${CLUSTER_REMOTE_CONNECT}
+discovery.seed_hosts: ${DISCOVERY_SERVICE}
+
+node.name: ${NODE_NAME}
+node.master: ${NODE_MASTER}
+node.data: ${NODE_DATA}
+node.ingest: ${NODE_INGEST}
+
+network.host: ${NETWORK_HOST}
+
+path.data: ${ES_HOME}/data
+path.logs: ${ES_HOME}/logs
+path.repo: ${ES_HOME}/backup
+
+bootstrap.memory_lock: ${MEMORY_LOCK}
+
+http.compression: true
+http.cors.enabled: ${HTTP_CORS_ENABLE}
+http.cors.allow-origin: ${HTTP_CORS_ALLOW_ORIGIN}

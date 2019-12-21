@@ -1,0 +1,41 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elk-es-headless
+  namespace: pks
+  labels:
+    app: elk-es
+    role: master
+spec:
+  ports:
+  - name: transport
+    port: 9300
+    protocol: TCP
+  - name: http
+    port: 9200
+    protocol: TCP
+  clusterIP: None
+  selector:
+    app: elk-es
+    role: master
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: elk-es
+  namespace: pks
+  labels:
+    app: elk-es
+    role: master
+spec:
+  ports:
+  - name: transport
+    port: 9300
+    protocol: TCP
+  - name: http
+    port: 9200
+    protocol: TCP
+  selector:
+    app: elk-es
+    role: master
