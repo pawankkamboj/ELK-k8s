@@ -30,26 +30,35 @@ RUN wget -q https://artifacts.elastic.co/downloads/logstash/logstash-$VERSION.ta
 COPY --chown=logstash:logstash config /home/logstash/logstash/config
 COPY --chown=logstash:logstash run.sh /home/logstash/logstash/bin/run.sh
 
-#- setting env require for pipeline 
+#- setting env require for pipeline -> for filebeat input 
 ENV PIPELINE_WORKER=1 PIPELINE_BATCHSIZE=250 PIPELINE_BATCH_DELAY=50 \
-    TOPIC_PATTERN=".*" \
-    BOOTSTRAP_SERVERS=localhost:9092 \
-    CONSUMER_THREAD_COUNT=1 \
     ELASTIC_SEARCH_HOST="http://localhost:9200" \
-    CONSUMER_GROUP="logstash" \
     TEAM="devops" \
     LS_JAVA_OPTS="-Xms1g -Xmx1g" \
     CONFIG_RELOAD_AUTOMATIC="true" \
     INDEX_START_NAME="k8s0" \
-    MAX_POLL_RECORDS=500 \
-    METADATA_MAX_AGE=60000 \
-    AUTO_COMMIT_INTERVAL=1000 \
-    SESSION_TIMEOUT=90000 \
-    REQUEST_TIMEOUT=120000 \
-    HEARTBEAT_INTERVAL=30000 \
-    MAX_POLL_INTERVAL=180000 \
     EXTRA_OPTS=""
 
+#- setting env require for pipeline -> for kafka input 
+#ENV PIPELINE_WORKER=1 PIPELINE_BATCHSIZE=250 PIPELINE_BATCH_DELAY=50 \
+#    TOPIC_PATTERN=".*" \
+#    BOOTSTRAP_SERVERS=localhost:9092 \
+#    CONSUMER_THREAD_COUNT=1 \
+#    ELASTIC_SEARCH_HOST="http://localhost:9200" \
+#    CONSUMER_GROUP="logstash" \
+#    TEAM="devops" \
+#    LS_JAVA_OPTS="-Xms1g -Xmx1g" \
+#    CONFIG_RELOAD_AUTOMATIC="true" \
+#    INDEX_START_NAME="k8s0" \
+#    MAX_POLL_RECORDS=500 \
+#    METADATA_MAX_AGE=60000 \
+#    AUTO_COMMIT_INTERVAL=1000 \
+#    SESSION_TIMEOUT=90000 \
+#    REQUEST_TIMEOUT=120000 \
+#    HEARTBEAT_INTERVAL=30000 \
+#    MAX_POLL_INTERVAL=180000 \
+#    EXTRA_OPTS=""
+    
 #- use in label to set current date-time stamps of image, pass during docker build command, like "--build-arg BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
 #- we need this because some automation tool use this value to get latest image build time stamp
 ARG BUILD_DATE
